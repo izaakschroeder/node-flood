@@ -16,8 +16,14 @@ var options1 = {
 };
 
 var options2 = {  
-           host: 'www.ibm.com',   
+           host: 'www.google.com',   
            port: 80,
+	   method: 'POST'  
+};
+
+var options3 = {  
+           host: '142.58.162.176',   
+           port: 8888,
 	   method: 'POST'  
 };
 
@@ -28,17 +34,22 @@ function test(t){
 };
 
 function temp(k, array){		
-	var req = http.request(options2, function(res) {
+	var req = http.request(options3, function(res) {
 		var starttime = hrtime.time();		
 		console.log('Request #',k,': sending http request');
 		res.on('data', function () {
 			var receivetime = hrtime.time();			
+			var latency = receivetime - starttime;			
 			console.log('Request #',k,': data received');
-			var latency = receivetime - starttime;
+			
 			array[k] = latency*1;
 			console.log('Request #',k,': Latency =',array[k],'nanoseconds' );
-			console.log('Latency Mean = ',calMean(array));
-			console.log('SD = ',calSD(array,calMean(array)));
+			if (array.length==numberofrequest){
+				console.log('END OF LATENCY TEST');					
+				console.log('Total Latency = ',calTotal(array),'seconds');				
+				console.log('Mean = ',calMean(array),'milliseconds');
+				console.log('Standard Deviation = ',calSD(array,calMean(array)),'milliseconds');
+			};
 			res.on('end', function() {
 				var endtime = hrtime.time();
 				var timeneeded = endtime - receivetime;						
@@ -54,6 +65,15 @@ function temp(k, array){
 	req.end();		
 };
 
+function calTotal(array){
+	var sum=0;
+	for (var i=0; i<array.length; i++){
+		sum = sum + array[i];
+	};
+	sum=sum/1000000000;
+	return Math.round(sum*1000)/1000;
+};
+
 function calMean (array){
 	var mean=0;
 	var sum=0;
@@ -61,7 +81,10 @@ function calMean (array){
 		sum = sum + array[i];
 	};
 	mean = sum/array.length;
-	return mean;
+	//in millisecondes
+	mean = mean/1000000;
+	//round up to 3 decimal place
+	return Math.round(mean*1000)/1000;
 };
 
 function calSD (array, mean){
@@ -72,7 +95,10 @@ function calSD (array, mean){
 	}
 	temp = temp/array.length;
 	sd = Math.sqrt(temp);
-	return sd;
+	//in millisecondes	
+	sd = sd/1000000;
+	//round up to 3 decimal place
+	return Math.round(sd*1000)/1000;
 };
 
 test(numberofrequest);
