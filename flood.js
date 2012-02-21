@@ -75,3 +75,9 @@ function calSD (array, mean){
 };
 		
 test(1000);
+
+
+
+
+
+
