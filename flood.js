@@ -1,6 +1,7 @@
 var http = require('http');  
 var hrtime = require('hrtime');
 var latarr=[];
+var numberofrequest = process.argv.slice(2); 
 
 var server = http.createServer(function(req, res){ 
   res.writeHead(200, {'Content-Type': 'text/html'});
@@ -8,7 +9,7 @@ var server = http.createServer(function(req, res){
   res.end();
 }).listen(8080);
 
-var options = {  
+var options1 = {  
            host: 'localhost',   
            port: 8080,
 	   method: 'POST'  
@@ -20,14 +21,14 @@ var options2 = {
 	   method: 'POST'  
 };
 
-function test(times){
-	for (var i =0; i< times; i++){
+function test(t){
+	for (var i =0; i< t; i++){
 		temp(i, latarr);
 	};
 };
 
 function temp(k, array){		
-	var req = http.request(options, function(res) {
+	var req = http.request(options2, function(res) {
 		var starttime = hrtime.time();		
 		console.log('Request #',k,': sending http request');
 		res.on('data', function () {
@@ -43,8 +44,8 @@ function temp(k, array){
 				var timeneeded = endtime - receivetime;						
 				console.log('Request #',k,': END OF DATA');
 				console.log('Request #',k,': data transfer time =',timeneeded,'nanoseconds');
-				});
-			});	
+			});
+		});	
 	});
 	req.on('error', function(e) {
 		console.log('Request #',k,': ERROR',e.message)
@@ -73,11 +74,5 @@ function calSD (array, mean){
 	sd = Math.sqrt(temp);
 	return sd;
 };
-		
-test(1000);
 
-
-
-
-
-
+test(numberofrequest);
