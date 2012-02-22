@@ -1,7 +1,12 @@
 var http = require('http');  
 var hrtime = require('hrtime');
-var latarr=[];
-var numberofrequest = process.argv.slice(2); 
+var latarray=[];
+var numberofrequest = process.argv.slice(2);
+var badrequest=0;
+var latarrayindex=0;
+var total=0;
+var mean=0;
+var sd=0;
 
 var server = http.createServer(function(req, res){ 
   res.writeHead(200, {'Content-Type': 'text/html'});
@@ -11,44 +16,58 @@ var server = http.createServer(function(req, res){
 
 var options1 = {  
            host: 'localhost',   
-           port: 8080,
-	   method: 'POST'  
+           port: 800,
+	   method: 'GET'  
 };
 
 var options2 = {  
            host: 'www.google.com',   
            port: 80,
-	   method: 'POST'  
+	   method: 'GET'  
 };
 
 var options3 = {  
-           host: '142.58.162.176',   
+           host: 'www.ibm.com',   
+           port: 80,
+	   method: 'GET'  
+};
+
+var options4 = {  
+           host: '142.58.63.146',   
            port: 8888,
 	   method: 'POST'  
 };
 
 function test(t){
 	for (var i =0; i< t; i++){
-		temp(i, latarr);
+		temp(i, latarray);
 	};
 };
 
 function temp(k, array){		
-	var req = http.request(options3, function(res) {
+	var req = http.request(options2, function(res) {
 		var starttime = hrtime.time();		
 		console.log('Request #',k,': sending http request');
 		res.on('data', function () {
 			var receivetime = hrtime.time();			
 			var latency = receivetime - starttime;			
 			console.log('Request #',k,': data received');
-			
-			array[k] = latency*1;
-			console.log('Request #',k,': Latency =',array[k],'nanoseconds' );
-			if (array.length==numberofrequest){
-				console.log('END OF LATENCY TEST');					
-				console.log('Total Latency = ',calTotal(array),'seconds');				
-				console.log('Mean = ',calMean(array),'milliseconds');
-				console.log('Standard Deviation = ',calSD(array,calMean(array)),'milliseconds');
+			//console.log(latarrayindex);
+			array[latarrayindex] = latency*1;
+			console.log('Request #',k,': Latency =',array[latarrayindex],'nanoseconds' );
+			latarrayindex++;
+			if (array.length==numberofrequest-badrequest){
+				console.log('END OF LATENCY TEST');
+				total = calTotal(array);
+				mean = calMean(total,array.length);
+				sd = calSD(array,mean);
+				console.log('Total Latency = ',Math.round(total/1000000)/1000,'seconds');				
+				//console.log(total);
+				console.log('Mean = ',Math.round(mean/1000)/1000,'milliseconds');
+				//console.log(mean);
+				console.log('Standard Deviation = ',Math.round(sd/1000)/1000,'milliseconds');
+				//console.log(sd);
+				console.log('Number of bad request =',badrequest)
 			};
 			res.on('end', function() {
 				var endtime = hrtime.time();
@@ -59,46 +78,64 @@ function temp(k, array){
 		});	
 	});
 	req.on('error', function(e) {
-		console.log('Request #',k,': ERROR',e.message)
+		console.log('Request #',k,': ERROR',e.message);
+		badrequest++;
+		//console.log('bad request=',badrequest);
+		if (array.length==numberofrequest-badrequest){
+				console.log('END OF LATENCY TEST');
+				total = calTotal(array);
+				mean = calMean(total,array.length);
+				sd = calSD(array,mean);					
+				console.log('Total Latency = ',Math.round(total/1000000)/1000,'seconds');				
+				//console.log(total);
+				console.log('Mean = ',Math.round(mean/1000)/1000,'milliseconds');
+				//console.log(mean);
+				console.log('Standard Deviation = ',Math.round(sd/1000)/1000,'milliseconds');
+				//console.log(sd);
+				console.log('Number of bad request =',badrequest)
+		};
 	});
 	req.write('data\n');
-	req.end();		
+	//req.end();		
 };
 
 function calTotal(array){
-	var sum=0;
-	for (var i=0; i<array.length; i++){
-		sum = sum + array[i];
-	};
-	sum=sum/1000000000;
-	return Math.round(sum*1000)/1000;
-};
-
-function calMean (array){
-	var mean=0;
-	var sum=0;
-	for (var i=0; i<array.length; i++){
-		sum = sum + array[i];
-	};
-	mean = sum/array.length;
-	//in millisecondes
-	mean = mean/1000000;
-	//round up to 3 decimal place
-	return Math.round(mean*1000)/1000;
-};
-
-function calSD (array, mean){
+	//console.log('running caltotal function');	
 	var temp=0;
-	var sd=0;	
 	for (var i=0; i<array.length; i++){
-		temp = temp + Math.pow(array[i]-mean,2);
+	//	console.log('i=',i,'=' ,array[i]);		
+		temp = temp + array[i];
+	//	console.log('running sum :',temp);
+	};
+	return temp;
+};
+
+function calMean(sum,number){
+	//console.log('running calMean');
+	var temp=0;
+	temp = sum/number;
+	return temp;
+}
+
+function calMeanArray (array){
+	//console.log('input length:::::',array.length);	
+	var temp=0;
+	for (var i=0; i<array.length; i++){
+		temp = temp + array[i];
+	};	
+	temp = temp/array.length;
+	return temp;
+};
+
+function calSD (array, m){
+	//console.log('running calSD');	
+	var temp=0;
+	for (var i=0; i<array.length; i++){
+		temp = temp + Math.pow(array[i]-m,2);
 	}
 	temp = temp/array.length;
-	sd = Math.sqrt(temp);
-	//in millisecondes	
-	sd = sd/1000000;
-	//round up to 3 decimal place
-	return Math.round(sd*1000)/1000;
+	temp = Math.sqrt(temp);
+	return temp;
 };
 
 test(numberofrequest);
