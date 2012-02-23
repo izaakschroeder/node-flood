@@ -1,7 +1,6 @@
 var http = require('http');  
 var hrtime = require('hrtime');
 var fs =require('fs');
-var event = require('events');
 var stream = fs.createWriteStream('output.json', {'flags':'a'});
 var userinput = process.argv.slice(2);
 var numberofrequest =0;
@@ -80,7 +79,7 @@ function temp(k, array){
 		console.log('Request #',k,': ERROR',e.message);
 		badrequest++;
 		if (array.length==numberofrequest-badrequest){
-			res.emit('finish',endoftest(array));
+			req.emit('finish',endoftest(array));
 		};
 	});
 	req.write('data\n');
@@ -104,18 +103,30 @@ function endoftest(array){
 };
 
 function output(){
-	
-	var options = {
-		numberofrequest: numberofrequest,
-		total: total,
-		mean: mean,
-		sd: sd,
-		badrequest: badrequest,
-	};
-	var data = JSON.stringify(options, null,2);
-	console.log('SUMMARY SAVED TO OUTPUT.JSON');	
-	stream.write(data);
-	process.exit();
+
+	//var options = {
+		//numberofrequest: numberofrequest [
+	//	testresult:{
+	//	numberofrequest: numberofrequest,	
+	//	total:total,
+	//	mean: mean,
+	//	sd: sd,
+	//	badrequest: badrequest
+	//	}
+	//};
+	//var data = JSON.stringify(options, null,2);
+	console.log('SUMMARY SAVED TO OUTPUT.JSON');
+	stream.write('{\n');	
+	stream.write('"testresult": {\n');
+	stream.write('   "numberofrequest": '+numberofrequest+',\n');	
+	stream.write('   "totallatency": '+total+',\n');
+	stream.write('   "mean": ' +mean+',\n');
+	stream.write('   "sd": '+sd+',\n');
+	stream.write('   "badrequest": '+badrequest+'\n');
+	stream.write('},\n');
+	//stream.write(data);
+	//stream.end();
+	//process.exit();
 };
 
 
@@ -157,5 +168,5 @@ function calSD (array, m){
 	temp = Math.sqrt(temp);
 	return temp;
 };
-
-test(userinput);
+test(150);
+//test(userinput);
