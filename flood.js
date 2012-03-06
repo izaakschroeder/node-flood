@@ -39,15 +39,16 @@ var options2 = {
 };
 
 var options3 = {  
-           host: 'www.amazon.com',   
+           host: 'www.6park.com',   
            port: 80,
 	   method: 'GET'
 };
 //testing LAN proxy
 var options4 = {  
-           host: '192.168.8.99',   
-           port: 5555,
-	   method: 'GET'  
+           host: '192.254.5.110',   
+           port: 8888,
+	   method: 'GET',
+path:'/fab'
 };
 
 
@@ -75,33 +76,32 @@ function testnowait(n){
 
 function temp(k, array){
 	//'optionsX' for host option
-	startarray[k]=hrtime.time();
-	var req = http.request(options1, function(res) {
-			
-		var starttime = hrtime.time();
-		//startarray[k]=starttime;	
-		//console.log('Request #',k,': sending http request to',options2.host,'at time =',starttime/1000000000);
-		//var timeRecorded=false;		
-		res.on('data', function () {
-                       //if(!timeRecorded){
-			var receivetime = hrtime.time();			
-			var latency = receivetime - starttime;	
-			//console.log(res);		
-			//console.log('Request #',k,': data received');
-			array[latarrayindex] = latency*1;
-			//console.log('Request #',k,': Latency =',array[latarrayindex],'nanoseconds' );
-			latarrayindex++;
-			//console.log('printint array', array);
-			//console.log('-------------DATA---------------');
-			//console.log(chunk);
-			//timeRecorded=true;
-				if (array.length===numberofrequest-badrequest){
-				
-					endoftest(array);	
-					//res.emit('finish',endoftest(array));
-				};
 	
-			//};
+	var req = http.request(options3, function(res) {
+			startarray[k]=hrtime.time();
+		var starttime = hrtime.time();
+		console.log('Request #',k,': sending http request to',options4.host,'at time =',starttime/1000000000,'seconds');
+		
+		var timeRecorded=false;		
+		res.on('data', function (chunk) {
+		       	if(!timeRecorded){
+				var receivetime = hrtime.time();			
+				var latency = receivetime - starttime;	
+				
+				//console.log('Request #',k,': data received');
+				array[latarrayindex] = latency*1;
+				console.log('Request #',k,': Latency =',array[latarrayindex],'nanoseconds' );
+				latarrayindex++;
+				//console.log('printint array', array);
+				//console.log('-------------DATA---------------');
+				//console.log(chunk);
+				timeRecorded=true;
+				if (array.length==numberofrequest-badrequest){
+					endoftest(array);
+					req.end();	
+						//res.emit('finish',endoftest(array));
+				};
+			};
 			req.end();
 			//res.on('end', function() {
 			//	var endtime = hrtime.time();
@@ -157,7 +157,7 @@ function endoftest(array){
 	//console.log(numberofrequest,'  ',startarray.length);
 	//console.log(temp);
 	//console.log(numberofrequest);
-	console.log( (temp/(numberofrequest-1))/1000000000+' seconds');
+	console.log('Request sent at an interval of '+(temp/(numberofrequest-1))/1000000000+' seconds');
 };
 
 function output(){
