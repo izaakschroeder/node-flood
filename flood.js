@@ -1,7 +1,7 @@
 var http = require('http');  
 var hrtime = require('hrtime');
 var fs =require('fs');
-var stream = fs.createWriteStream('output.json', {'flags':'a'});
+var stream = fs.createWriteStream('output.txt', {'flags':'a'});
 var userinput = process.argv.slice(2);
 var numberofrequest =userinput[0];;
 var intervaltime= userinput[1];
@@ -17,7 +17,7 @@ var sd=0;
 //intervaltime= userinput[1];
 //console.log(userinput);
 
-http.globalAgent.maxSockets=1000;
+http.globalAgent.maxSockets=10000;
 
 var server = http.createServer(function(req, res){ 
   res.writeHead(200, {'Content-Type': 'text/html'});
@@ -77,10 +77,10 @@ function testnowait(n){
 function temp(k, array){
 	//'optionsX' for host option
 	
-	var req = http.request(options3, function(res) {
+	var req = http.request(options1, function(res) {
 			startarray[k]=hrtime.time();
 		var starttime = hrtime.time();
-		console.log('Request #',k,': sending http request to',options4.host,'at time =',starttime/1000000000,'seconds');
+		//console.log('Request #',k,': sending http request to',options1.host,'at time =',starttime/1000000000,'seconds');
 		
 		var timeRecorded=false;		
 		res.on('data', function (chunk) {
@@ -90,7 +90,7 @@ function temp(k, array){
 				
 				//console.log('Request #',k,': data received');
 				array[latarrayindex] = latency*1;
-				console.log('Request #',k,': Latency =',array[latarrayindex],'nanoseconds' );
+				//console.log('Request #',k,': Latency =',array[latarrayindex],'nanoseconds' );
 				latarrayindex++;
 				//console.log('printint array', array);
 				//console.log('-------------DATA---------------');
@@ -157,7 +157,7 @@ function endoftest(array){
 	//console.log(numberofrequest,'  ',startarray.length);
 	//console.log(temp);
 	//console.log(numberofrequest);
-	console.log('Request sent at an interval of '+(temp/(numberofrequest-1))/1000000000+' seconds');
+	console.log('Request sent at an average interval of '+(temp/(numberofrequest-1))/1000000000+' seconds');
 };
 
 function output(){
@@ -173,7 +173,7 @@ function output(){
 	//	}
 	//};
 	//var data = JSON.stringify(options, null,2);
-	console.log('SUMMARY SAVED TO OUTPUT.JSON');
+	console.log('SUMMARY SAVED TO OUTPUT.TXT');
 	stream.write('{\n');	
 	//stream.write('"testresult": {\n');
 	stream.write('   "numberofrequest": '+numberofrequest+',\n');	
@@ -227,9 +227,11 @@ function calSD (array, m){
 	return temp;
 };
 
-
+if (userinput.length == 1){
+	//console.log('no wait');
+	testnowait(numberofrequest);
+}else { 
 test(numberofrequest,intervaltime);
-
-//testnowait(numberofrequest);
+};
 
 
