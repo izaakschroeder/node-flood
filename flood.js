@@ -5,6 +5,7 @@ var fs =require('fs');
 var userinput = process.argv.slice(2);
 var numberoftest = 0;
 var stop = 3;
+var globalStartTime = hrtime.time();
 //var numberofrequest =userinput[0];;
 //var intervaltime= userinput[1];
 //var latarray=[];
@@ -63,7 +64,8 @@ function setup(){
 			mean:0,
 			sd:0,
 			testStartTime: hrtime.time(),
-			reqPerSecond:0,	 
+			reqPerSecond:0,
+			testEndTime:0, 
 			};
 	resultarray.push(testresult);
 
@@ -136,18 +138,21 @@ function temp(k, array){
 function endoftest(array){
 	numberoftest++;
 	var testTook = hrtime.time() - testresult.testStartTime;
+	testresult.testEndTime = hrtime.time() - globalStartTime;
 	testresult.reqPerSecond = array.length / ((testTook/1000000)/1000);
 	console.log('END OF LATENCY TEST RUN '+numberoftest);
-	console.log('Req Per Second = ',testresult.reqPerSecond);
+	//console.log('testTook ',testTook);
+	console.log('Test Ends at',testresult.testEndTime/1000000000,'seconds after start');
+	console.log('Req Per Second =',testresult.reqPerSecond);
 	testresult.total = calTotal(array);
 	testresult.mean = calMean(testresult.total,array.length);
 	testresult.sd = calSD(array,testresult.mean);
-	console.log('Number of request = ',testresult.numberofrequest);
-	console.log('Total Latency = ',Math.round(testresult.total/1000000)/1000,'seconds');				
+	console.log('Number of request =',testresult.numberofrequest);
+	console.log('Total Latency =',Math.round(testresult.total/1000000)/1000,'seconds');				
 	//console.log(total);
-	console.log('Mean = ',Math.round(testresult.mean/1000)/1000,'milliseconds');
+	console.log('Mean =',Math.round(testresult.mean/1000)/1000,'milliseconds');
 	//console.log(mean);
-	console.log('Standard Deviation = ',Math.round(testresult.sd/1000)/1000,'milliseconds');
+	console.log('Standard Deviation =',Math.round(testresult.sd/1000)/1000,'milliseconds');
 	//console.log(sd);
 	console.log('Number of bad request =',testresult.badrequest);
 	output1();
