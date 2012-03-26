@@ -155,7 +155,7 @@ function endoftest(array){
 	console.log('Standard Deviation =',Math.round(testresult.sd/1000)/1000,'milliseconds');
 	//console.log(sd);
 	console.log('Number of bad request =',testresult.badrequest);
-	output1();
+	output2();
 	
 	//testing start time
 
@@ -238,14 +238,26 @@ var stream = fs.createWriteStream('output.txt', {'flags':'a'});
 	console.log('SUMMARY SAVED TO OUTPUT.TXT');
 	//stream.write('{\n');	
 	//stream.write('"testresult": {\n');
-	stream.write(Math.round(reqPerSecond)+'\n');	
-	stream.write((mean)+'\n');
+	stream.write(Math.round(testresult.reqPerSecond)+'\n');
+	stream.write((testresult.numberofrequest)+'\n');
+	stream.write((testresult.mean)+'\n');
 	stream.end();
-numberoftest++;
-if (numberoftest< 2){
+
+if (numberoftest < stop){
 	setup();
-	
-	test(resultarray[0].numberofrequest,resultarray[0].intervaltime);
+	//console.log(testresult.numberofrequest);
+	//console.log('numberoftest',numberoftest);
+	//console.log(numberoftest*10);
+	testresult.numberofrequest = testresult.numberofrequest*1+(numberoftest*10);	
+	//console.log('numberofre',testresult.numberofrequest);
+
+	test(resultarray[resultarray.length-1].numberofrequest,resultarray[resultarray.length-1].intervaltime);
+} else {
+	//process.exit();
+console.log('END OF FLOOD');
+setTimeout(function(){process.exit();},3000);
+
+
 };
 };
 
