@@ -248,7 +248,7 @@ if (numberoftest < stop){
 	//console.log(testresult.numberofrequest);
 	//console.log('numberoftest',numberoftest);
 	//console.log(numberoftest*10);
-	testresult.numberofrequest = testresult.numberofrequest*1+(numberoftest*10);	
+	testresult.numberofrequest = testresult.numberofrequest*1+(numberoftest*100);	
 	//console.log('numberofre',testresult.numberofrequest);
 
 	test(resultarray[resultarray.length-1].numberofrequest,resultarray[resultarray.length-1].intervaltime);
@@ -318,9 +318,6 @@ run();
 //console.log(testresult.badrequest);
 
 
-//waitInterval(100);
-//test(numberofrequest,intervaltime);
-//
 //setup();
 //resultarray.push(testresult);
 //testresult.badrequest = 100;
