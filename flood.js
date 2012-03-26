@@ -1,13 +1,12 @@
 var http = require('http');  
 var hrtime = require('hrtime');
 var fs =require('fs');
-var stream = fs.createWriteStream('output.txt', {'flags':'a'});
+//var stream = fs.createWriteStream('output.txt', {'flags':'a'});
 var userinput = process.argv.slice(2);
-var stop =0;
+var numberoftest = 0;
 //var numberofrequest =userinput[0];;
 //var intervaltime= userinput[1];
 //var latarray=[];
-
 //var startarray=[];
 //var badrequest=0;
 //var latarrayindex=0;
@@ -58,7 +57,6 @@ function setup(){
 			numberofrequest:userinput[0],
 			intervaltime:userinput[1],
 			latarray:[],
-			//var startarray=[];
 			badrequest:0,
 			total:0,
 			mean:0,
@@ -117,10 +115,10 @@ function temp(k, array){
 	});
 	req.on('error', function(e) {
 		console.log('Request #',k,': ERROR',e.message);
-		testresult.badrequest++;
-		console.log('test array length',array.length);
-		console.log(testresult.numberofrequest);
-		console.log(testresult.badrequest);
+		//testresult.badrequest++;
+		//console.log('test array length',array.length);
+		//console.log(testresult.numberofrequest);
+		//console.log(testresult.badrequest);
 		if (array.length==testresult.numberofrequest-testresult.badrequest){
 			endoftest(array);			
 			//req.emit('finish',endoftest(array));
@@ -136,22 +134,20 @@ function temp(k, array){
 function endoftest(array){
 
 	var testTook = hrtime.time() - testresult.testStartTime;
-
-	reqPerSecond = array.length / ((testTook/1000000)/1000);
-
-	console.log('END OF LATENCY TEST got '+reqPerSecond+" reqs/sec");
-	total = calTotal(array);
-	mean = calMean(total,array.length);
-	sd = calSD(array,mean);
+	testresult.reqPerSecond = array.length / ((testTook/1000000)/1000);
+	console.log('END OF LATENCY TEST got '+testresult.reqPerSecond+" reqs/sec");
+	testresult.total = calTotal(array);
+	testresult.mean = calMean(testresult.total,array.length);
+	testresult.sd = calSD(array,testresult.mean);
 	console.log('Number of request = ',testresult.numberofrequest);
-	console.log('Total Latency = ',Math.round(total/1000000)/1000,'seconds');				
+	console.log('Total Latency = ',Math.round(testresult.total/1000000)/1000,'seconds');				
 	//console.log(total);
-	console.log('Mean = ',Math.round(mean/1000)/1000,'milliseconds');
+	console.log('Mean = ',Math.round(testresult.mean/1000)/1000,'milliseconds');
 	//console.log(mean);
-	console.log('Standard Deviation = ',Math.round(sd/1000)/1000,'milliseconds');
+	console.log('Standard Deviation = ',Math.round(testresult.sd/1000)/1000,'milliseconds');
 	//console.log(sd);
 	console.log('Number of bad request =',testresult.badrequest);
-	output2();
+	output1();
 	
 	//testing start time
 
@@ -173,8 +169,8 @@ function endoftest(array){
 	
 };
 
-function output(){
-
+function output1(){
+var stream = fs.createWriteStream('output.txt', {'flags':'a'});
 	//var options = {
 		//numberofrequest: numberofrequest [
 	//	testresult:{
@@ -190,14 +186,20 @@ function output(){
 	stream.write('{\n');	
 	//stream.write('"testresult": {\n');
 	stream.write('   "numberofrequest": '+testresult.numberofrequest+',\n');	
-	stream.write('   "totallatency": '+total+',\n');
-	stream.write('   "mean": ' +mean+',\n');
-	stream.write('   "sd": '+sd+',\n');
+	stream.write('	 "reqPerSecond: '+testresult.reqPerSecond+',\n');
+	stream.write('   "totallatency": '+testresult.total+',\n');
+	stream.write('   "mean": ' +testresult.mean+',\n');
+	stream.write('   "sd": '+testresult.sd+',\n');
 	stream.write('   "badrequest": '+testresult.badrequest+'\n');
 	stream.write('},\n');
 	//stream.write(data);
 	stream.end();
-	//run();
+numberoftest++;
+if (numberoftest< 2){
+	setup();
+	testresult.numberofrequest = 20;
+	test(resultarray[1].numberofrequest,resultarray[1].intervaltime);
+};
 	//process.exit();
 };
 
@@ -220,9 +222,11 @@ var stream = fs.createWriteStream('output.txt', {'flags':'a'});
 	stream.write(Math.round(reqPerSecond)+'\n');	
 	stream.write((mean)+'\n');
 	stream.end();
-stop++;
-if (stop< 2){
-run();
+numberoftest++;
+if (numberoftest< 2){
+	setup();
+	
+	test(resultarray[0].numberofrequest,resultarray[0].intervaltime);
 };
 };
 
