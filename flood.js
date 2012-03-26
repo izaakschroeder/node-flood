@@ -4,6 +4,7 @@ var fs =require('fs');
 //var stream = fs.createWriteStream('output.txt', {'flags':'a'});
 var userinput = process.argv.slice(2);
 var numberoftest = 0;
+var stop = 3;
 //var numberofrequest =userinput[0];;
 //var intervaltime= userinput[1];
 //var latarray=[];
@@ -65,6 +66,7 @@ function setup(){
 			reqPerSecond:0,	 
 			};
 	resultarray.push(testresult);
+
 };
 
 function test(n,t){
@@ -102,7 +104,7 @@ function temp(k, array){
 		var receivetime = hrtime.time();			
 		var latency = receivetime - req.starttime;
 		array.push(latency);
-		console.log('Request #',k,': sending http request to',options1.host,'at time =',req.starttime/1000000000,'seconds');
+		//console.log('Request #',k,': sending http request to',options1.host,'at time =',req.starttime/1000000000,'seconds');
 		
 		res.on("end", function() {
 			if (array.length==testresult.numberofrequest-testresult.badrequest){
@@ -132,10 +134,11 @@ function temp(k, array){
 };
 
 function endoftest(array){
-
+	numberoftest++;
 	var testTook = hrtime.time() - testresult.testStartTime;
 	testresult.reqPerSecond = array.length / ((testTook/1000000)/1000);
-	console.log('END OF LATENCY TEST got '+testresult.reqPerSecond+" reqs/sec");
+	console.log('END OF LATENCY TEST RUN '+numberoftest);
+	console.log('Req Per Second = ',testresult.reqPerSecond);
 	testresult.total = calTotal(array);
 	testresult.mean = calMean(testresult.total,array.length);
 	testresult.sd = calSD(array,testresult.mean);
@@ -186,7 +189,7 @@ var stream = fs.createWriteStream('output.txt', {'flags':'a'});
 	stream.write('{\n');	
 	//stream.write('"testresult": {\n');
 	stream.write('   "numberofrequest": '+testresult.numberofrequest+',\n');	
-	stream.write('	 "reqPerSecond: '+testresult.reqPerSecond+',\n');
+	stream.write('   "reqPerSecond": '+testresult.reqPerSecond+',\n');
 	stream.write('   "totallatency": '+testresult.total+',\n');
 	stream.write('   "mean": ' +testresult.mean+',\n');
 	stream.write('   "sd": '+testresult.sd+',\n');
@@ -194,13 +197,24 @@ var stream = fs.createWriteStream('output.txt', {'flags':'a'});
 	stream.write('},\n');
 	//stream.write(data);
 	stream.end();
-numberoftest++;
-if (numberoftest< 2){
+
+//console.log('end of output',numberoftest);
+if (numberoftest < stop){
 	setup();
-	testresult.numberofrequest = 20;
-	test(resultarray[1].numberofrequest,resultarray[1].intervaltime);
-};
+	//console.log(testresult.numberofrequest);
+	//console.log('numberoftest',numberoftest);
+	//console.log(numberoftest*10);
+	testresult.numberofrequest = testresult.numberofrequest*1+(numberoftest*10);	
+	//console.log('numberofre',testresult.numberofrequest);
+
+	test(resultarray[resultarray.length-1].numberofrequest,resultarray[resultarray.length-1].intervaltime);
+} else {
 	//process.exit();
+console.log('END OF FLOOD');
+setTimeout(function(){process.exit();},2000);
+
+//process.exit();
+};
 };
 
 function output2(){
