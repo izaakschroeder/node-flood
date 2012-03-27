@@ -141,13 +141,14 @@ function endoftest(array){
 	testresult.testEndTime = hrtime.time() - globalStartTime;
 	testresult.reqPerSecond = array.length / ((testTook/1000000)/1000);
 	console.log('END OF LATENCY TEST RUN '+numberoftest);
+	console.log('Test Run Ends at',testresult.testEndTime/1000000000,'seconds after start');
+	console.log('Number of request =',testresult.numberofrequest);
 	console.log('waitInterval =',testresult.intervaltime);
-	//console.log('Test Ends at',testresult.testEndTime/1000000000,'seconds after start');
 	console.log('Req Per Second =',testresult.reqPerSecond);
 	testresult.total = calTotal(array);
 	testresult.mean = calMean(testresult.total,array.length);
 	//testresult.sd = calSD(array,testresult.mean);
-	console.log('Number of request =',testresult.numberofrequest);
+
 	console.log('Total Latency =',Math.round(testresult.total/1000000)/1000,'seconds');				
 	//console.log(total);
 	console.log('Mean =',Math.round(testresult.mean/1000)/1000,'milliseconds');
@@ -224,6 +225,7 @@ var stream = fs.createWriteStream('output.txt', {'flags':'a'});
 	stream.write(Math.round(testresult.reqPerSecond)+'\n');
 	stream.write((testresult.numberofrequest)+'\n');
 	stream.write((testresult.mean)+'\n');
+	stream.write((Math.round(testresult.testEndTime/1000000)/1000)+' seconds\n');
 	stream.end();
 	runLinear();
 };
@@ -280,14 +282,14 @@ function runLinear(){
 			//console.log(testresult.numberofrequest);
 			//console.log('numberoftest',numberoftest);
 			//console.log(numberoftest*10);
-		testresult.numberofrequest = testresult.numberofrequest*1+(numberoftest*100);
+		testresult.numberofrequest = testresult.numberofrequest*1+(numberoftest*userinput[0]);
 		testresult.intervaltime = testresult.intervaltime*1-(numberoftest*userinput[1]/10);
-			//console.log('numberofre',testresult.numberofrequest);
+		if (testresult.intervaltime<=0){testresult.intervaltime=1};
 		test(resultarray[resultarray.length-1].numberofrequest,resultarray[resultarray.length-1].intervaltime);
 		} else {
 			//process.exit();
 		console.log('END OF FLOOD');
-		setTimeout(function(){process.exit();},3000);
+		setTimeout(function(){process.exit();},2500);
 
 
 		};
