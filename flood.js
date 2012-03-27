@@ -4,7 +4,7 @@ var fs =require('fs');
 //var stream = fs.createWriteStream('output.txt', {'flags':'a'});
 var userinput = process.argv.slice(2);
 var numberoftest = 0;
-var stop = 3;
+var stop = 10;
 var globalStartTime = hrtime.time();
 //var numberofrequest =userinput[0];;
 //var intervaltime= userinput[1];
@@ -141,18 +141,18 @@ function endoftest(array){
 	testresult.testEndTime = hrtime.time() - globalStartTime;
 	testresult.reqPerSecond = array.length / ((testTook/1000000)/1000);
 	console.log('END OF LATENCY TEST RUN '+numberoftest);
-	//console.log('testTook ',testTook);
-	console.log('Test Ends at',testresult.testEndTime/1000000000,'seconds after start');
+	console.log('waitInterval =',testresult.intervaltime);
+	//console.log('Test Ends at',testresult.testEndTime/1000000000,'seconds after start');
 	console.log('Req Per Second =',testresult.reqPerSecond);
 	testresult.total = calTotal(array);
 	testresult.mean = calMean(testresult.total,array.length);
-	testresult.sd = calSD(array,testresult.mean);
+	//testresult.sd = calSD(array,testresult.mean);
 	console.log('Number of request =',testresult.numberofrequest);
 	console.log('Total Latency =',Math.round(testresult.total/1000000)/1000,'seconds');				
 	//console.log(total);
 	console.log('Mean =',Math.round(testresult.mean/1000)/1000,'milliseconds');
 	//console.log(mean);
-	console.log('Standard Deviation =',Math.round(testresult.sd/1000)/1000,'milliseconds');
+	//console.log('Standard Deviation =',Math.round(testresult.sd/1000)/1000,'milliseconds');
 	//console.log(sd);
 	console.log('Number of bad request =',testresult.badrequest);
 	output2();
@@ -203,23 +203,6 @@ var stream = fs.createWriteStream('output.txt', {'flags':'a'});
 	//stream.write(data);
 	stream.end();
 
-//console.log('end of output',numberoftest);
-if (numberoftest < stop){
-	setup();
-	//console.log(testresult.numberofrequest);
-	//console.log('numberoftest',numberoftest);
-	//console.log(numberoftest*10);
-	testresult.numberofrequest = testresult.numberofrequest*1+(numberoftest*10);	
-	//console.log('numberofre',testresult.numberofrequest);
-
-	test(resultarray[resultarray.length-1].numberofrequest,resultarray[resultarray.length-1].intervaltime);
-} else {
-	//process.exit();
-console.log('END OF FLOOD');
-setTimeout(function(){process.exit();},2000);
-
-//process.exit();
-};
 };
 
 function output2(){
@@ -242,23 +225,7 @@ var stream = fs.createWriteStream('output.txt', {'flags':'a'});
 	stream.write((testresult.numberofrequest)+'\n');
 	stream.write((testresult.mean)+'\n');
 	stream.end();
-
-if (numberoftest < stop){
-	setup();
-	//console.log(testresult.numberofrequest);
-	//console.log('numberoftest',numberoftest);
-	//console.log(numberoftest*10);
-	testresult.numberofrequest = testresult.numberofrequest*1+(numberoftest*100);	
-	//console.log('numberofre',testresult.numberofrequest);
-
-	test(resultarray[resultarray.length-1].numberofrequest,resultarray[resultarray.length-1].intervaltime);
-} else {
-	//process.exit();
-console.log('END OF FLOOD');
-setTimeout(function(){process.exit();},3000);
-
-
-};
+	runLinear();
 };
 
 function calTotal(array){
@@ -305,6 +272,25 @@ function run(){
 	setup();
 	
 	test(resultarray[0].numberofrequest,resultarray[0].intervaltime);
+};
+
+function runLinear(){
+	if (numberoftest < stop){
+		setup();
+			//console.log(testresult.numberofrequest);
+			//console.log('numberoftest',numberoftest);
+			//console.log(numberoftest*10);
+		testresult.numberofrequest = testresult.numberofrequest*1+(numberoftest*100);
+		testresult.intervaltime = testresult.intervaltime*1-(numberoftest*userinput[1]/10);
+			//console.log('numberofre',testresult.numberofrequest);
+		test(resultarray[resultarray.length-1].numberofrequest,resultarray[resultarray.length-1].intervaltime);
+		} else {
+			//process.exit();
+		console.log('END OF FLOOD');
+		setTimeout(function(){process.exit();},3000);
+
+
+		};
 };
 
 run();
