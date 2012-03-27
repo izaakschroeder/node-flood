@@ -19,6 +19,7 @@ var globalStartTime = hrtime.time();
 //var reqPerSecond=0;
 //var testresult;
 var resultarray= [];
+var io = require('socket.io').listen(8001);
 
 http.globalAgent.maxSockets=10000;
 
@@ -27,6 +28,18 @@ var server = http.createServer(function(req, res){
   res.write('TEST PAGE');
   res.end();
 }).listen(8080);
+
+io.sockets.on('connection', function (socket) {
+socket.on('message', function(message){
+if (message == "linear")
+                  {  
+                     run();
+                     //console.log("fabonacci(15) = "+n+"--from client");
+                     //socket.emit("num", {reqnumber:"use linear"});
+		};
+               });
+            });
+
 
 //pre-entered host options
 var options1 = {  
@@ -101,7 +114,7 @@ function temp(k, array){
 	//'optionsX' for host option
 	var starttime ;
 	
-	var req = http.request(options1, function(res) {
+	var req = http.request(options2, function(res) {
 			
 		var receivetime = hrtime.time();			
 		var latency = receivetime - req.starttime;
@@ -283,8 +296,8 @@ function runLinear(){
 			//console.log('numberoftest',numberoftest);
 			//console.log(numberoftest*10);
 		testresult.numberofrequest = testresult.numberofrequest*1+(numberoftest*userinput[0]);
-		testresult.intervaltime = testresult.intervaltime*1-(numberoftest*userinput[1]/10);
-		if (testresult.intervaltime<=0){testresult.intervaltime=1};
+		testresult.intervaltime = testresult.intervaltime*1-Math.round((numberoftest*userinput[1]/10));
+		if (testresult.intervaltime<1){testresult.intervaltime=1};
 		test(resultarray[resultarray.length-1].numberofrequest,resultarray[resultarray.length-1].intervaltime);
 		} else {
 			//process.exit();
